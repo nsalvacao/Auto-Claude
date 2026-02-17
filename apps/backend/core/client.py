@@ -851,6 +851,8 @@ def create_client(
         # Enable file checkpointing to track file read/write state across tool calls
         # This prevents "File has not been read yet" errors in recovery sessions
         "enable_file_checkpointing": True,
+        # Note: max_tokens limit handled by SDK internally, no need for extra_args
+        # "extra_args": {},  # Removed: Claude CLI doesn't support --max-tokens option
     }
 
     # Fast mode: enable user setting source so CLI reads fastMode from
