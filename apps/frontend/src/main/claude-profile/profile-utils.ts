@@ -10,6 +10,20 @@ import type { ClaudeProfile, APIProfile } from '../../shared/types';
 import { getCredentialsFromKeychain } from './credential-utils';
 
 /**
+ * OAuth token format pattern (sk-ant-oat01-...)
+ * This is the expected format for Claude Code OAuth tokens.
+ */
+const OAUTH_TOKEN_PATTERN = /^sk-ant-oat01-[A-Za-z0-9_-]+$/;
+
+/**
+ * Validate OAuth token format.
+ * Returns true if token matches expected format (sk-ant-oat01-...).
+ */
+export function isValidTokenFormat(token: string | undefined): boolean {
+  return !!token && OAUTH_TOKEN_PATTERN.test(token);
+}
+
+/**
  * Default Claude config directory
  */
 export const DEFAULT_CLAUDE_CONFIG_DIR = join(homedir(), '.claude');
@@ -176,6 +190,7 @@ export function isProfileAuthenticated(profile: ClaudeProfile): boolean {
 }
 
 /**
+<<<<<<< HEAD
  * Check if a profile has a valid OAuth token stored in the profile.
  *
  * DEPRECATED: This function checks for CACHED OAuth tokens which we no longer store.
@@ -190,12 +205,17 @@ export function isProfileAuthenticated(profile: ClaudeProfile): boolean {
  * Use isProfileAuthenticated() to check for configDir-based credentials instead.
  *
  * See: docs/LONG_LIVED_AUTH_PLAN.md for full context.
+=======
+ * Check if a profile has a valid OAuth token.
+ * Token is valid for 1 year from creation and must match expected format.
+>>>>>>> refs/remotes/upstream/pr/1326
  */
 export function hasValidToken(profile: ClaudeProfile): boolean {
   if (!profile?.oauthToken) {
     return false;
   }
 
+<<<<<<< HEAD
   // For legacy profiles with stored oauthToken, return true.
   // The actual token validity is determined by the Keychain (via CLAUDE_CONFIG_DIR).
   // We keep this for backwards compat to avoid breaking existing profiles during migration.
@@ -214,6 +234,23 @@ export function isAPIProfileAuthenticated(profile: APIProfile): boolean {
   // Check for presence of required fields
   if (!profile?.apiKey || !profile?.baseUrl) {
     return false;
+=======
+  // Validate token format (must start with sk-ant-oat01-)
+  // Note: For encrypted tokens (enc:...), we can't validate format before decryption,
+  // but the token-encryption module will return undefined if decryption fails
+  if (!profile.oauthToken.startsWith('enc:') && !isValidTokenFormat(profile.oauthToken)) {
+    console.warn('[profile-utils] Token has invalid format (expected sk-ant-oat01-...)');
+    return false;
+  }
+
+  // Check if token is expired (1 year validity)
+  if (profile.tokenCreatedAt) {
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    if (new Date(profile.tokenCreatedAt) < oneYearAgo) {
+      return false;
+    }
+>>>>>>> refs/remotes/upstream/pr/1326
   }
 
   // Validate that the fields are non-empty strings (after trimming whitespace)

@@ -4,8 +4,12 @@
  */
 
 import { getClaudeProfileManager } from './claude-profile-manager';
+<<<<<<< HEAD
 import { getUsageMonitor } from './claude-profile/usage-monitor';
 import { debugLog } from '../shared/utils/debug-logger';
+=======
+import { isValidTokenFormat } from './claude-profile/profile-utils';
+>>>>>>> refs/remotes/upstream/pr/1326
 
 /**
  * Regex pattern to detect Claude Code rate limit messages
@@ -388,6 +392,7 @@ export function detectBillingFailure(
       const effectiveProfileId = profileId || profileManager.getActiveProfile().id;
       const failureType = classifyBillingFailureType(output);
 
+<<<<<<< HEAD
       return {
         isBillingFailure: true,
         profileId: effectiveProfileId,
@@ -395,6 +400,22 @@ export function detectBillingFailure(
         message: getBillingFailureMessage(failureType),
         originalError: sanitizeErrorOutput(output)
       };
+=======
+    if (decryptedToken) {
+      // Validate token format after decryption
+      if (!isValidTokenFormat(decryptedToken)) {
+        console.warn('[getProfileEnv] Token has invalid format for profile:', profile.name);
+        console.warn('[getProfileEnv] Token should start with sk-ant-oat01-. Please re-authenticate.');
+        // Don't use invalid token - fall through to other auth methods
+      } else {
+        console.warn('[getProfileEnv] Using OAuth token for profile:', profile.name);
+        return {
+          CLAUDE_CODE_OAUTH_TOKEN: decryptedToken
+        };
+      }
+    } else {
+      console.warn('[getProfileEnv] Failed to decrypt token for profile:', profile.name);
+>>>>>>> refs/remotes/upstream/pr/1326
     }
   }
 

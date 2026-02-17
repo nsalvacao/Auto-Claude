@@ -151,6 +151,7 @@ export class TitleGenerator extends EventEmitter {
     debug('Generating title for description:', description.substring(0, 100) + '...');
 
     const autoBuildEnv = this.loadAutoBuildEnv();
+<<<<<<< HEAD
     debug('Environment loaded', {
       hasOAuthToken: !!autoBuildEnv.CLAUDE_CODE_OAUTH_TOKEN
     });
@@ -212,6 +213,17 @@ export class TitleGenerator extends EventEmitter {
       });
       return null;
     }
+=======
+    const profileEnv = getProfileEnv();
+>>>>>>> refs/remotes/upstream/pr/1326
+
+    // Log token sources for debugging (masked for security)
+    const maskToken = (t: string | undefined) => t ? `${t.substring(0, 15)}...` : 'none';
+    debug('Token sources:', {
+      autoBuildEnv: maskToken(autoBuildEnv.CLAUDE_CODE_OAUTH_TOKEN),
+      profileEnv: maskToken(profileEnv.CLAUDE_CODE_OAUTH_TOKEN),
+      effectiveSource: profileEnv.CLAUDE_CODE_OAUTH_TOKEN ? 'profile' : (autoBuildEnv.CLAUDE_CODE_OAUTH_TOKEN ? 'autoBuildEnv' : 'none')
+    });
 
     return new Promise((resolve) => {
       // Parse Python command to handle space-separated commands like "py -3"

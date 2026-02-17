@@ -53,8 +53,13 @@ import {
   createProfileDirectory as createProfileDirectoryImpl,
   isProfileAuthenticated as isProfileAuthenticatedImpl,
   hasValidToken,
+<<<<<<< HEAD
   expandHomePath,
   getEmailFromConfigDir
+=======
+  isValidTokenFormat,
+  expandHomePath
+>>>>>>> refs/remotes/upstream/pr/1326
 } from './claude-profile/profile-utils';
 import { debugLog } from '../shared/utils/debug-logger';
 
@@ -490,10 +495,17 @@ export class ClaudeProfileManager {
   /**
    * Set the OAuth token for a profile (encrypted storage).
    * Used when capturing token from `claude setup-token` output.
+   * Returns false if token format is invalid or profile not found.
    */
   setProfileToken(profileId: string, token: string, email?: string): boolean {
     const profile = this.getProfile(profileId);
     if (!profile) {
+      return false;
+    }
+
+    // Validate token format before storing
+    if (!isValidTokenFormat(token)) {
+      console.error('[ProfileManager] Invalid token format. Token must start with sk-ant-oat01-');
       return false;
     }
 
@@ -542,6 +554,7 @@ export class ClaudeProfileManager {
     const profile = this.getActiveProfile();
     const env: Record<string, string> = {};
 
+<<<<<<< HEAD
     // All profiles now use explicit CLAUDE_CONFIG_DIR for isolation
     // This prevents interference with external Claude Code CLI usage
     if (profile?.configDir) {
@@ -577,6 +590,24 @@ export class ClaudeProfileManager {
           credentials.error ? `(error: ${credentials.error})` : ''
         );
       }
+=======
+    if (profile?.oauthToken) {
+      // Decrypt the token before putting in environment
+      const decryptedToken = decryptToken(profile.oauthToken);
+      if (decryptedToken) {
+        // Validate token format after decryption
+        if (isValidTokenFormat(decryptedToken)) {
+          env.CLAUDE_CODE_OAUTH_TOKEN = decryptedToken;
+        } else {
+          console.warn('[ProfileManager] Decrypted token has invalid format, falling back to configDir');
+        }
+      }
+    }
+
+    // Fallback to configDir for backward compatibility (if no valid token and not default profile)
+    if (!env.CLAUDE_CODE_OAUTH_TOKEN && profile?.configDir && !profile.isDefault) {
+      env.CLAUDE_CONFIG_DIR = profile.configDir;
+>>>>>>> refs/remotes/upstream/pr/1326
     }
 
     return env;
