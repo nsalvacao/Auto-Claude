@@ -21,7 +21,12 @@ import time
 from pathlib import Path
 from typing import Any
 
+<<<<<<< HEAD
 from core.fast_mode import ensure_fast_mode_in_user_settings
+=======
+# Git environment isolation - prevents worktree operation failures from inherited env vars
+from core.git_executable import GIT_ENV_VARS_TO_CLEAR
+>>>>>>> refs/remotes/upstream/pr/1599
 from core.platform import (
     is_windows,
     validate_cli_path,
@@ -505,6 +510,7 @@ def create_client(
     # Collect env vars to pass to SDK (ANTHROPIC_BASE_URL, CLAUDE_CONFIG_DIR, etc.)
     sdk_env = get_sdk_env_vars()
 
+<<<<<<< HEAD
     # Get the config dir for profile-specific credential lookup
     # CLAUDE_CONFIG_DIR enables per-profile Keychain entries with SHA256-hashed service names
     config_dir = sdk_env.get("CLAUDE_CONFIG_DIR")
@@ -532,6 +538,16 @@ def create_client(
         )
     else:
         logger.info("[Fast Mode] inactive — not requested for this client")
+=======
+    # CRITICAL: Clear git environment variables from os.environ BEFORE SDK instantiation.
+    # The SDK merges os.environ with our env dict, so contaminated git vars (GIT_INDEX_FILE,
+    # GIT_DIR, etc.) inherited from parent processes would leak through and cause
+    # git operation errors in worktree operations.
+    # We must DELETE these vars from os.environ, not set them to "" (empty string is a value
+    # that git interprets as "use empty path", which fails).
+    for var in GIT_ENV_VARS_TO_CLEAR:
+        os.environ.pop(var, None)
+>>>>>>> refs/remotes/upstream/pr/1599
 
     # Debug: Log git-bash path detection on Windows
     if "CLAUDE_CODE_GIT_BASH_PATH" in sdk_env:
