@@ -47,7 +47,8 @@ import type {
   TaskLogStreamChunk,
   ImageAttachment,
   ReviewReason,
-  MergeProgress
+  MergeProgress,
+  StuckSubtaskInfo
 } from './task';
 import type {
   TerminalCreateOptions,
@@ -205,6 +206,8 @@ export interface ElectronAPI {
   recoverStuckTask: (taskId: string, options?: TaskRecoveryOptions) => Promise<IPCResult<TaskRecoveryResult>>;
   checkTaskRunning: (taskId: string) => Promise<IPCResult<boolean>>;
   resumePausedTask: (taskId: string) => Promise<IPCResult>;
+  getStuckInfo: (projectId: string, specId: string) => Promise<IPCResult<{ stuckSubtasks: StuckSubtaskInfo[] }>>;
+  unstickSubtasks: (projectId: string, specId: string) => Promise<IPCResult<{ cleared: number }>>;
 
   // Image operations
   loadImageThumbnail: (projectPath: string, specId: string, imagePath: string) => Promise<IPCResult<string>>;

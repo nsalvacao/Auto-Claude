@@ -159,6 +159,11 @@ Environment Variables:
         action="store_true",
         help="Push branch and create a GitHub Pull Request",
     )
+    build_group.add_argument(
+        "--unstick",
+        action="store_true",
+        help="Clear all stuck subtasks for a spec (allows task to continue after file validation failures)",
+    )
 
     # PR options
     parser.add_argument(
@@ -462,6 +467,26 @@ def _run_cli() -> None:
             model=model,
             verbose=args.verbose,
         )
+        return
+
+    # Handle --unstick command
+    if args.unstick:
+        from services.recovery import clear_stuck_subtasks, get_stuck_subtasks
+
+        try:
+            stuck = get_stuck_subtasks(spec_dir, project_dir)
+            if stuck:
+                clear_stuck_subtasks(spec_dir, project_dir)
+                print(f"Cleared {len(stuck)} stuck subtasks for {args.spec}")
+                for s in stuck:
+                    print(
+                        f"  - {s.get('subtask_id', 'unknown')}: {s.get('reason', 'no reason')[:80]}"
+                    )
+            else:
+                print(f"No stuck subtasks found for {args.spec}")
+        except Exception as e:
+            print(f"Failed to clear stuck subtasks: {e}")
+            sys.exit(1)
         return
 
     # Normal build flow
