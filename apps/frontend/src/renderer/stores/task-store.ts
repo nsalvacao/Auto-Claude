@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { arrayMove } from '@dnd-kit/sortable';
-import type { Task, TaskStatus, SubtaskStatus, ImplementationPlan, Subtask, TaskMetadata, ExecutionProgress, ExecutionPhase, ReviewReason, TaskDraft, ImageAttachment, TaskOrderState } from '../../shared/types';
+import type { Task, TaskStatus, SubtaskStatus, ImplementationPlan, Subtask, TaskMetadata, ExecutionProgress, ExecutionPhase, ReviewReason, TaskDraft, ImageAttachment, TaskOrderState, StuckSubtaskInfo } from '../../shared/types';
 import { debugLog, debugWarn } from '../../shared/utils/debug-logger';
 import { useProjectStore } from './project-store';
 
@@ -956,6 +956,48 @@ export async function recoverStuckTask(
       success: false,
       message: error instanceof Error ? error.message : 'Unknown error'
     };
+  }
+}
+
+/**
+ * Get stuck subtask information for a spec
+ * @param projectId - The project ID
+ * @param specId - The spec ID to check
+ */
+export async function getStuckInfo(
+  projectId: string,
+  specId: string
+): Promise<{ success: boolean; stuckSubtasks?: StuckSubtaskInfo[]; error?: string }> {
+  try {
+    const result = await window.electronAPI.getStuckInfo(projectId, specId);
+    if (result.success && result.data) {
+      return { success: true, stuckSubtasks: result.data.stuckSubtasks };
+    }
+    return { success: false, error: result.error };
+  } catch (error) {
+    console.error('Error getting stuck info:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+/**
+ * Clear stuck subtasks for a spec
+ * @param projectId - The project ID
+ * @param specId - The spec ID to unstick
+ */
+export async function unstickSubtasks(
+  projectId: string,
+  specId: string
+): Promise<{ success: boolean; cleared?: number; error?: string }> {
+  try {
+    const result = await window.electronAPI.unstickSubtasks(projectId, specId);
+    if (result.success && result.data) {
+      return { success: true, cleared: result.data.cleared };
+    }
+    return { success: false, error: result.error };
+  } catch (error) {
+    console.error('Error unsticking subtasks:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 
